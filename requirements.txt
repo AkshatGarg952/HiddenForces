@@ -1,7 +1,14 @@
+# FastAPI and server
 fastapi==0.115.2
 uvicorn==0.32.0
-langchain==0.3.3
+
+# LangChain ecosystem
+langchain==0.3.79
+langchain-core==0.3.79
+langsmith==0.3.45
 langgraph==0.2.35
 langchain-google-genai==2.1.12
+
+# Utilities
 requests==2.32.3
 python-dotenv==1.0.1
