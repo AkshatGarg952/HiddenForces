@@ -2,5 +2,6 @@ fastapi==0.115.2
 uvicorn==0.32.0
 langchain==0.3.3
 langgraph==0.2.35
+langchain-google-genai==0.1.0
 requests==2.32.3
 python-dotenv==1.0.1
