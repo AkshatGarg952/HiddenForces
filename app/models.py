@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Literal, Optional
 
 class Example(BaseModel):
     input: str
@@ -15,20 +15,15 @@ class Problem(BaseModel):
     inputFormat: str
     outputFormat: str
     examples: List[Example]
-    hiddenTests: List[Dict]
-    note: str
+    hiddenTests: Optional[List[Dict]] = []
+    note: Optional[str] = ""
     rating: int
     source: str
     tags: List[str]
+    platform: Literal["leetcode", "codeforces"] = "codeforces"
 
 class RequestBody(BaseModel):
-    language: str
     problem: Problem
-    code: str
-
-class TestCase(BaseModel):
-    input: str
-    output: str
 
 class ResponseBody(BaseModel):
-    hiddenTestCases: List[TestCase]
+    hiddenTestCases: List[str]
