@@ -132,7 +132,13 @@ Create a `.env` file in the project root:
 
 ```env
 GOOGLE_API_KEY=your_gemini_api_key_here
+PORT=8000
 ```
+
+### Environment Variables
+
+- **GOOGLE_API_KEY**: Your Google Gemini API key (required)
+- **PORT**: Port number for the server (default: 8000)
 
 ### Getting a Gemini API Key
 
@@ -145,7 +151,22 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 
 ## Running the Service
 
-Start the FastAPI server:
+### Option 1: Using run.py (Recommended)
+
+The easiest way to start the server with the PORT from your `.env` file:
+
+```bash
+python run.py
+```
+
+This will:
+- Load the PORT from your `.env` file
+- Start the server on the configured port (default: 8000)
+- Enable auto-reload during development
+
+### Option 2: Using uvicorn directly
+
+Start the FastAPI server manually:
 
 ```bash
 uvicorn app.main:app --reload
@@ -154,7 +175,8 @@ uvicorn app.main:app --reload
 **Important Notes:**
 - Use `app.main:app` (NOT `app.main.py:app`)
 - The `--reload` flag enables auto-reload during development
-- Server runs on: `http://127.0.0.1:8000`
+- Default server runs on: `http://127.0.0.1:8000`
+- To use a custom port: `uvicorn app.main:app --reload --port 8001`
 
 ### Production Deployment
 
@@ -163,6 +185,8 @@ For production, run without reload and specify host/port:
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
+
+Or use the run.py script with production settings by modifying it to set `reload=False`.
 
 ---
 
@@ -415,6 +439,7 @@ HiddenForces/
 │   └── leetcode_validator.py       # LeetCode test validator
 ├── .env                             # Environment variables (create this)
 ├── .gitignore
+├── run.py                           # Server startup script (uses PORT from .env)
 ├── requirements.txt                 # Python dependencies
 └── README.md
 ```
