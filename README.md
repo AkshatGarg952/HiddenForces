@@ -30,14 +30,14 @@ The service supports both **LeetCode** and **Codeforces** problem formats and in
 
 ## Features
 
-- 🤖 **AI-Powered Generation**: Uses Google Gemini via LangChain for intelligent test case creation
-- 🔄 **Workflow-Based Validation**: LangGraph workflow ensures test cases are valid and comprehensive
-- 🎯 **Platform Support**: Works with both LeetCode and Codeforces problem formats
-- ✅ **Automatic Validation**: Generated test cases are validated before being returned
-- 🚀 **FastAPI Backend**: High-performance async API built with FastAPI
-- 📊 **Structured Output**: Returns clean, validated test cases ready for code execution
-- 🔍 **Edge Case Coverage**: Generates boundary conditions, corner cases, and stress tests
-- 🌐 **CORS Enabled**: Ready for cross-origin requests from frontend applications
+- **AI-Powered Generation**: Uses Google Gemini via LangChain for intelligent test case creation
+- **Workflow-Based Validation**: LangGraph workflow ensures test cases are valid and comprehensive
+- **Platform Support**: Works with both LeetCode and Codeforces problem formats
+- **Automatic Validation**: Generated test cases are validated before being returned
+- **FastAPI Backend**: High-performance async API built with FastAPI
+- **Structured Output**: Returns clean, validated test cases ready for code execution
+- **Edge Case Coverage**: Generates boundary conditions, corner cases, and stress tests
+- **CORS Enabled**: Ready for cross-origin requests from frontend applications
 
 ---
 
@@ -557,4 +557,4 @@ This project is licensed under the MIT License.
 
 ---
 
-⭐ Star this repository if you find it helpful!
+Star this repository if you find it helpful!
