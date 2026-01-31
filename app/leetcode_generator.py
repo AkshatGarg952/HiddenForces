@@ -127,12 +127,12 @@ OUTPUT FORMAT:
 - Separate multi-line cases with blank line
 
 QUALITY CHECKLIST:
-✓ At least 3 edge cases (empty/null, min, max)
-✓ At least 2 boundary values
-✓ At least 2 algorithmic traps
-✓ All cases follow constraints strictly
-✓ All cases different from samples
-✓ Format matches examples exactly
+- At least 3 edge cases (empty/null, min, max)
+- At least 2 boundary values
+- At least 2 algorithmic traps
+- All cases follow constraints strictly
+- All cases different from samples
+- Format matches examples exactly
 
 Generate {num_cases} comprehensive test inputs now:
         """

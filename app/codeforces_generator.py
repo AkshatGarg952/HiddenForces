@@ -106,13 +106,13 @@ OUTPUT REQUIREMENTS:
 - Separate multi-line test cases with a blank line if needed
 
 QUALITY CHECKLIST before outputting:
-✓ At least 3 absolute edge cases (min/max values)
-✓ At least 2 algorithmic traps (overflow, off-by-one, TLE)
-✓ At least 2 problem-specific killer cases
-✓ All cases STRICTLY follow constraints
-✓ All cases DIFFERENT from samples
-✓ Format EXACTLY matches sample inputs
-✓ Would these break a solution with 1 subtle bug? (If no, regenerate)
+- At least 3 absolute edge cases (min/max values)
+- At least 2 algorithmic traps (overflow, off-by-one, TLE)
+- At least 2 problem-specific killer cases
+- All cases STRICTLY follow constraints
+- All cases DIFFERENT from samples
+- Format EXACTLY matches sample inputs
+- Would these break a solution with 1 subtle bug? (If no, regenerate)
 
 Now generate {num_cases} merciless test case inputs:
         """
