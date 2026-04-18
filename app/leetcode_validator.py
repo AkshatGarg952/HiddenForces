@@ -91,8 +91,8 @@ Validate now and return only valid cases:
     test_cases_str = "\n\n".join(test_cases)
     prompt = prompt_template.format(
         test_cases=test_cases_str,
-        input_format=metadata['inputFormat'],
-        description=metadata['description']
+        input_format=metadata.get('inputFormat', ''),
+        description=metadata.get('description', '')
     )
 
     response = llm.invoke(prompt)

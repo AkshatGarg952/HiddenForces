@@ -118,12 +118,13 @@ Now generate {num_cases} merciless test case inputs:
         """
     )
 
-    examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in metadata['examples']])
+    examples = metadata.get('examples', [])
+    examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in examples])
     prompt = prompt_template.format(
-        description=metadata['description'],
-        input_format=metadata['inputFormat'],
+        description=metadata.get('description', ''),
+        input_format=metadata.get('inputFormat', ''),
         examples=examples_str,
-        rating=metadata['rating'],
+        rating=metadata.get('rating', 0),
         num_cases=num_cases
     )
 

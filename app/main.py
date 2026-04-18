@@ -1,7 +1,11 @@
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .models import RequestBody, ResponseBody
 from .workflow import build_workflow
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="HiddenForces Test Generator")
 
@@ -30,6 +34,10 @@ async def generate_leetcode_tests(request: RequestBody):
     try:
         workflow = build_workflow()
         metadata = request.problem.dict()
+        metadata['examples'] = metadata.get('examples') or metadata.get('sampleTests') or []
+        metadata['inputFormat'] = metadata.get('inputFormat') or ""
+        metadata['outputFormat'] = metadata.get('outputFormat') or ""
+        metadata['rating'] = metadata.get('rating') or 0
         metadata['platform'] = 'leetcode'
 
         result = workflow.invoke({
@@ -39,7 +47,7 @@ async def generate_leetcode_tests(request: RequestBody):
         })
         return ResponseBody(hiddenTestCases=result['valid_test_cases'])
     except Exception as e:
-        print(f"Error generating LeetCode tests: {e}")
+        logger.exception("Error generating LeetCode tests")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate-codeforces-tests", response_model=ResponseBody)
@@ -47,6 +55,10 @@ async def generate_codeforces_tests(request: RequestBody):
     try:
         workflow = build_workflow()
         metadata = request.problem.dict()
+        metadata['examples'] = metadata.get('examples') or []
+        metadata['inputFormat'] = metadata.get('inputFormat') or ""
+        metadata['outputFormat'] = metadata.get('outputFormat') or ""
+        metadata['rating'] = metadata.get('rating') or 0
         metadata['platform'] = 'codeforces'
 
         result = workflow.invoke({
@@ -56,5 +68,5 @@ async def generate_codeforces_tests(request: RequestBody):
         })
         return ResponseBody(hiddenTestCases=result['valid_test_cases'])
     except Exception as e:
-        print(f"Error generating Codeforces tests: {e}")
+        logger.exception("Error generating Codeforces tests")
         raise HTTPException(status_code=500, detail=str(e))

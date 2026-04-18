@@ -6,20 +6,21 @@ class Example(BaseModel):
     output: str
 
 class Problem(BaseModel):
-    _id: str
+    _id: Optional[str] = None
     problemId: str
-    timeLimit: float
-    memoryLimit: int
+    timeLimit: Optional[float] = None
+    memoryLimit: Optional[int] = None
     title: str
     description: str
-    inputFormat: str
-    outputFormat: str
-    examples: List[Example]
+    inputFormat: Optional[str] = ""
+    outputFormat: Optional[str] = ""
+    examples: Optional[List[Example]] = []
+    sampleTests: Optional[List[Example]] = []
     hiddenTests: Optional[List[Dict]] = []
     note: Optional[str] = ""
-    rating: int
-    source: str
-    tags: List[str]
+    rating: Optional[int] = None
+    source: Optional[str] = None
+    tags: Optional[List[str]] = []
     platform: Literal["leetcode", "codeforces"] = "codeforces"
 
 class RequestBody(BaseModel):

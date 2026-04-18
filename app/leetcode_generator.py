@@ -138,12 +138,13 @@ Generate {num_cases} comprehensive test inputs now:
         """
     )
 
-    examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in metadata['examples']])
+    examples = metadata.get('examples', [])
+    examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in examples])
     tags_str = ", ".join(metadata.get('tags', []))
     
     prompt = prompt_template.format(
-        description=metadata['description'],
-        input_format=metadata['inputFormat'],
+        description=metadata.get('description', ''),
+        input_format=metadata.get('inputFormat', ''),
         examples=examples_str,
         tags=tags_str,
         num_cases=num_cases
