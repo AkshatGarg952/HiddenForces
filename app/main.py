@@ -2,8 +2,14 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .models import RequestBody, ResponseBody
+from .models import (
+    AIBattleSolveRequest,
+    AIBattleSolveResponse,
+    RequestBody,
+    ResponseBody,
+)
 from .workflow import build_workflow
+from .ai_battle_solver import solve_battle_problem
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +76,12 @@ async def generate_codeforces_tests(request: RequestBody):
     except Exception as e:
         logger.exception("Error generating Codeforces tests")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/ai-solver/solve-battle-problem", response_model=AIBattleSolveResponse)
+async def solve_ai_battle_problem(request: AIBattleSolveRequest):
+    try:
+        result = solve_battle_problem(request)
+        return AIBattleSolveResponse(**result)
+    except Exception as e:
+        logger.exception("Error solving AI battle problem")
+        raise HTTPException(status_code=503, detail=str(e))

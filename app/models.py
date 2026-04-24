@@ -28,3 +28,35 @@ class RequestBody(BaseModel):
 
 class ResponseBody(BaseModel):
     hiddenTestCases: List[str]
+
+class AIBattleProblem(BaseModel):
+    title: str
+    statement: str
+    inputFormat: Optional[str] = ""
+    outputFormat: Optional[str] = ""
+    constraints: Optional[str] = ""
+    samples: Optional[List[Example]] = []
+
+class PersonaConfig(BaseModel):
+    targetSkill: Optional[str] = "balanced"
+    maxRefinementPasses: Optional[int] = 1
+    displayName: Optional[str] = "KodeBot"
+    persona: Optional[str] = "generalist"
+
+class AIBattleSolveRequest(BaseModel):
+    battleId: str
+    mode: Literal["cp", "dsa"]
+    topic: str
+    attemptNumber: Optional[int] = 1
+    retryFeedback: Optional[str] = ""
+    ratingBand: int
+    language: str
+    problem: AIBattleProblem
+    personaConfig: PersonaConfig
+
+class AIBattleSolveResponse(BaseModel):
+    strategy: Literal["real_solver", "assisted_solver"]
+    language: str
+    generatedCode: str
+    confidence: float
+    attempts: int
