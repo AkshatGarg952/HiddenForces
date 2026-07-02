@@ -1,6 +1,8 @@
+import json
+import os
+
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -76,11 +78,10 @@ VALIDATION PROCESS:
 5. If ALL checks pass → ACCEPT, else → REJECT
 
 OUTPUT FORMAT:
-Return ONLY the valid test cases, one per output block (multi-line if needed).
+Return ONLY a valid JSON array of strings.
 Preserve exact formatting of accepted cases.
 NO explanations, NO labels, NO markdown.
 If a test case is invalid, silently drop it.
-Separate multi-line test cases with a blank line.
 
 CRITICAL: When in doubt, REJECT. Better to have 7 perfect test cases than 10 with 1 invalid.
 
@@ -97,22 +98,30 @@ Validate now and return only valid cases:
 
     response = llm.invoke(prompt)
     raw_content = response.content.strip()
-    
+
+    cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
+    try:
+        parsed = json.loads(cleaned_content)
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed if str(item).strip()]
+    except json.JSONDecodeError:
+        pass
+
     valid_test_cases = []
     current_case = []
-    
+
     for line in raw_content.split("\n"):
         line = line.strip()
         if line in ["```json", "```", "[", "]", ""] and not current_case:
             continue
-        
+
         if line == "" and current_case:
             valid_test_cases.append("\n".join(current_case))
             current_case = []
         elif line:
             current_case.append(line)
-    
+
     if current_case:
         valid_test_cases.append("\n".join(current_case))
-    
+
     return valid_test_cases

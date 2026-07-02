@@ -1,87 +1,39 @@
 import logging
+import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .models import (
-    AIBattleSolveRequest,
-    AIBattleSolveResponse,
-    RequestBody,
-    ResponseBody,
-)
-from .workflow import build_workflow
-from .ai_battle_solver import solve_battle_problem
+from fastapi.responses import JSONResponse
+from .routes import router
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="HiddenForces Test Generator")
+INTERNAL_SERVICE_TOKEN = os.getenv("INTERNAL_SERVICE_TOKEN")
+if not os.getenv("GOOGLE_API_KEY"):
+    raise RuntimeError("Missing GOOGLE_API_KEY")
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+    if origin.strip()
+]
+
+
+@app.middleware("http")
+async def require_internal_token(request, call_next):
+    if not INTERNAL_SERVICE_TOKEN or request.url.path in {"/", "/health", "/openapi.json", "/docs", "/redoc"}:
+        return await call_next(request)
+
+    if request.headers.get("x-internal-token") != INTERNAL_SERVICE_TOKEN:
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized service request."})
+
+    return await call_next(request)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=".*",
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/")
-async def root():
-    return {"message": "HiddenForces Test Generator API"}
-
-@app.get("/health")
-async def health():
-    return {
-        "status": "ok",
-        "service": "HiddenForces",
-        "message": "Service is running"
-    }
-
-@app.post("/generate-leetcode-tests", response_model=ResponseBody)
-async def generate_leetcode_tests(request: RequestBody):
-    try:
-        workflow = build_workflow()
-        metadata = request.problem.dict()
-        metadata['examples'] = metadata.get('examples') or metadata.get('sampleTests') or []
-        metadata['inputFormat'] = metadata.get('inputFormat') or ""
-        metadata['outputFormat'] = metadata.get('outputFormat') or ""
-        metadata['rating'] = metadata.get('rating') or 0
-        metadata['platform'] = 'leetcode'
-
-        result = workflow.invoke({
-            "metadata": metadata,
-            "test_cases": [],
-            "valid_test_cases": []
-        })
-        return ResponseBody(hiddenTestCases=result['valid_test_cases'])
-    except Exception as e:
-        logger.exception("Error generating LeetCode tests")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/generate-codeforces-tests", response_model=ResponseBody)
-async def generate_codeforces_tests(request: RequestBody):
-    try:
-        workflow = build_workflow()
-        metadata = request.problem.dict()
-        metadata['examples'] = metadata.get('examples') or []
-        metadata['inputFormat'] = metadata.get('inputFormat') or ""
-        metadata['outputFormat'] = metadata.get('outputFormat') or ""
-        metadata['rating'] = metadata.get('rating') or 0
-        metadata['platform'] = 'codeforces'
-
-        result = workflow.invoke({
-            "metadata": metadata,
-            "test_cases": [],
-            "valid_test_cases": []
-        })
-        return ResponseBody(hiddenTestCases=result['valid_test_cases'])
-    except Exception as e:
-        logger.exception("Error generating Codeforces tests")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/ai-solver/solve-battle-problem", response_model=AIBattleSolveResponse)
-async def solve_ai_battle_problem(request: AIBattleSolveRequest):
-    try:
-        result = solve_battle_problem(request)
-        return AIBattleSolveResponse(**result)
-    except Exception as e:
-        logger.exception("Error solving AI battle problem")
-        raise HTTPException(status_code=503, detail=str(e))
+app.include_router(router)

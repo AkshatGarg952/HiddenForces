@@ -1,6 +1,8 @@
+import json
+import os
+
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -118,13 +120,14 @@ CONSTRAINTS COMPLIANCE:
 - Ensure proper data types (int, string, array, etc.)
 
 OUTPUT FORMAT:
-- Return ONLY raw inputs, one per line
+- Return ONLY a valid JSON array of strings
 - NO explanations, NO labels, NO markdown
+- Each array item must be one complete input blob
+- Use escaped newlines inside strings when the format is multi-line
 - Match sample input format EXACTLY
 - For array inputs use JSON format: [1,2,3]
-- For string inputs use quotes: "hello"
+- For string inputs use quotes only when the problem format requires them
 - For tree inputs use level-order: [1,2,3,null,null,4,5]
-- Separate multi-line cases with blank line
 
 QUALITY CHECKLIST:
 - At least 3 edge cases (empty/null, min, max)
@@ -152,22 +155,30 @@ Generate {num_cases} comprehensive test inputs now:
 
     response = llm.invoke(prompt)
     raw_content = response.content.strip()
-    
+
+    cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
+    try:
+        parsed = json.loads(cleaned_content)
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed if str(item).strip()][:num_cases]
+    except json.JSONDecodeError:
+        pass
+
     test_cases = []
     current_case = []
-    
+
     for line in raw_content.split("\n"):
         line = line.strip()
         if line in ["```json", "```", "[", "]", ""] and not current_case:
             continue
-        
+
         if line == "" and current_case:
             test_cases.append("\n".join(current_case))
             current_case = []
         elif line:
             current_case.append(line)
-    
+
     if current_case:
         test_cases.append("\n".join(current_case))
-    
+
     return test_cases[:num_cases]

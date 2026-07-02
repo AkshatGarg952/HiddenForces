@@ -1,6 +1,8 @@
+import json
+import os
+
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -99,11 +101,12 @@ CRITICAL CONSTRAINTS COMPLIANCE:
 - Ensure multi-test inputs respect global constraints (sum of all n ≤ X)
 
 OUTPUT REQUIREMENTS:
-- Return ONLY raw inputs, one per line (or multi-line per case if format requires)
+- Return ONLY a valid JSON array of strings
 - NO explanations, NO labels like "Test 1:", NO markdown
+- Each array item must be one complete input blob
+- Use escaped newlines inside strings when the format is multi-line
 - Match sample input format EXACTLY (don't add/remove spaces or newlines)
 - Each test case must be COMPLETE and PARSEABLE as-is
-- Separate multi-line test cases with a blank line if needed
 
 QUALITY CHECKLIST before outputting:
 - At least 3 absolute edge cases (min/max values)
@@ -130,22 +133,30 @@ Now generate {num_cases} merciless test case inputs:
 
     response = llm.invoke(prompt)
     raw_content = response.content.strip()
-    
+
+    cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
+    try:
+        parsed = json.loads(cleaned_content)
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed if str(item).strip()][:num_cases]
+    except json.JSONDecodeError:
+        pass
+
     test_cases = []
     current_case = []
-    
+
     for line in raw_content.split("\n"):
         line = line.strip()
         if line in ["```json", "```", "[", "]", ""] and not current_case:
             continue
-        
+
         if line == "" and current_case:
             test_cases.append("\n".join(current_case))
             current_case = []
         elif line:
             current_case.append(line)
-    
+
     if current_case:
         test_cases.append("\n".join(current_case))
-    
+
     return test_cases[:num_cases]
