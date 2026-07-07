@@ -26,7 +26,7 @@ async def health():
 @router.post("/generate-leetcode-tests", response_model=ResponseBody)
 async def generate_leetcode_tests(request: RequestBody):
     try:
-        hidden_test_cases = generate_hidden_test_cases(request.problem, "leetcode")
+        hidden_test_cases = generate_hidden_test_cases(request.problem, "leetcode", request.solution)
         return ResponseBody(hiddenTestCases=hidden_test_cases)
     except Exception as error:
         logger.exception("Error generating LeetCode tests")
@@ -36,7 +36,7 @@ async def generate_leetcode_tests(request: RequestBody):
 @router.post("/generate-codeforces-tests", response_model=ResponseBody)
 async def generate_codeforces_tests(request: RequestBody):
     try:
-        hidden_test_cases = generate_hidden_test_cases(request.problem, "codeforces")
+        hidden_test_cases = generate_hidden_test_cases(request.problem, "codeforces", request.solution)
         return ResponseBody(hiddenTestCases=hidden_test_cases)
     except Exception as error:
         logger.exception("Error generating Codeforces tests")

@@ -1,3 +1,7 @@
+"""
+Codeforces test case generation using Gemini model prompt guidelines.
+"""
+
 import json
 import os
 
@@ -7,14 +11,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Initialize connection to Gemini model
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
     google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
-def generate_codeforces_test_cases(metadata: dict, num_cases: int = 10) -> list:
+def generate_codeforces_test_cases(metadata: dict, num_cases: int = 10, solution: dict = None) -> list:
+    """
+    Generates dynamic hidden test cases targeting Codeforces constraints, edge cases, and typical failure modes.
+    
+    Args:
+        metadata (dict): Problem parameters including title, description, rating.
+        num_cases (int): Desired count of generated test cases.
+        solution (dict, optional): Reference solution implementation.
+        
+    Returns:
+        list: List of generated hidden test case inputs as string blobs.
+    """
     prompt_template = PromptTemplate(
-        input_variables=["description", "input_format", "examples", "rating"],
+        input_variables=["description", "input_format", "examples", "rating", "solution"],
         template="""
 You are a legendary Codeforces problem setter (red/legendary grandmaster level) creating HIDDEN test cases that will determine if a solution truly deserves to pass. Your test cases have broken thousands of seemingly correct solutions.
 
@@ -23,6 +39,7 @@ Description: {description}
 Input Format: {input_format}
 Rating: {rating}
 Sample Cases (DO NOT replicate these): {examples}
+{solution}
 
 CRITICAL MISSION: Generate exactly {num_cases} test case INPUTS that would make even grandmasters nervous. These must be DIFFERENT from samples and cover failure modes most coders miss.
 
@@ -90,9 +107,9 @@ MANDATORY COVERAGE (prioritize based on problem type):
    - Single outlier + otherwise uniform
 
 10. **GREEDY KILLERS** (for greedy problems):
-    - Cases where local optimum ≠ global optimum
-    - Cases requiring lookahead
-    - Cases with ties that need specific breaking
+     - Cases where local optimum ≠ global optimum
+     - Cases requiring lookahead
+     - Cases with ties that need specific breaking
 
 CRITICAL CONSTRAINTS COMPLIANCE:
 - Parse EVERY constraint from description (1 ≤ n ≤ X, sum of n ≤ Y, etc.)
@@ -123,16 +140,22 @@ Now generate {num_cases} merciless test case inputs:
 
     examples = metadata.get('examples', [])
     examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in examples])
+    
+    solution_str = ""
+    if solution:
+        solution_str = f"REFERENCE SOLUTION:\nLanguage: {solution.get('language', '')}\nCode:\n{solution.get('code', '')}\n"
+
     prompt = prompt_template.format(
         description=metadata.get('description', ''),
         input_format=metadata.get('inputFormat', ''),
         examples=examples_str,
         rating=metadata.get('rating', 0),
+        solution=solution_str,
         num_cases=num_cases
     )
 
     response = llm.invoke(prompt)
-    raw_content = response.content.strip()
+    raw_content = response.content.strip() if isinstance(response.content, str) else ""
 
     cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
     try:

@@ -1,3 +1,7 @@
+"""
+LeetCode test case generation using Gemini model prompt guidelines.
+"""
+
 import json
 import os
 
@@ -7,14 +11,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Initialize connection to Gemini model
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
     google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
-def generate_leetcode_test_cases(metadata: dict, num_cases: int = 10) -> list:
+def generate_leetcode_test_cases(metadata: dict, num_cases: int = 10, solution: dict = None) -> list:
+    """
+    Generates dynamic hidden test cases targeting LeetCode constraints, edge cases, and typical failure modes.
+    
+    Args:
+        metadata (dict): Problem parameters including title, description, constraints.
+        num_cases (int): Desired count of generated test cases.
+        solution (dict, optional): Reference solution implementation.
+        
+    Returns:
+        list: List of generated hidden test case inputs as string blobs.
+    """
     prompt_template = PromptTemplate(
-        input_variables=["description", "input_format", "examples", "tags"],
+        input_variables=["description", "input_format", "examples", "tags", "solution"],
         template="""
 You are an expert LeetCode test case designer creating HIDDEN test cases that expose subtle bugs in solutions. Your test cases must be comprehensive and catch edge cases that typical solutions miss.
 
@@ -23,6 +39,7 @@ Description: {description}
 Input Format: {input_format}
 Tags: {tags}
 Sample Cases (DO NOT replicate): {examples}
+{solution}
 
 MISSION: Generate exactly {num_cases} test case INPUTS that comprehensively test the solution. These must cover ALL edge cases and common failure patterns.
 
@@ -145,16 +162,21 @@ Generate {num_cases} comprehensive test inputs now:
     examples_str = "\n".join([f"Input: {ex['input']}\nOutput: {ex['output']}" for ex in examples])
     tags_str = ", ".join(metadata.get('tags', []))
     
+    solution_str = ""
+    if solution:
+        solution_str = f"REFERENCE SOLUTION:\nLanguage: {solution.get('language', '')}\nCode:\n{solution.get('code', '')}\n"
+
     prompt = prompt_template.format(
         description=metadata.get('description', ''),
         input_format=metadata.get('inputFormat', ''),
         examples=examples_str,
         tags=tags_str,
+        solution=solution_str,
         num_cases=num_cases
     )
 
     response = llm.invoke(prompt)
-    raw_content = response.content.strip()
+    raw_content = response.content.strip() if isinstance(response.content, str) else ""
 
     cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
     try:

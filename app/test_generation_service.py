@@ -11,12 +11,13 @@ def build_generation_metadata(problem, platform: str) -> dict:
     return metadata
 
 
-def generate_hidden_test_cases(problem, platform: str) -> list[str]:
+def generate_hidden_test_cases(problem, platform: str, solution=None) -> list[str]:
     workflow = build_workflow()
     metadata = build_generation_metadata(problem, platform)
     result = workflow.invoke(
         {
             "metadata": metadata,
+            "solution": solution.model_dump() if solution else None,
             "test_cases": [],
             "valid_test_cases": [],
         }

@@ -1,3 +1,7 @@
+"""
+LeetCode test case validation using Gemini model guidelines.
+"""
+
 import json
 import os
 
@@ -7,12 +11,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Initialize connection to Gemini model
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
     google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
 def validate_leetcode_test_cases(test_cases: list, metadata: dict) -> list:
+    """
+    Validates a list of test cases against LeetCode format requirements and constraints.
+    
+    Args:
+        test_cases (list): Raw list of generated test case strings.
+        metadata (dict): Problem parameters including description, constraints, inputs format.
+        
+    Returns:
+        list: Filtered list of verified valid test cases.
+    """
     prompt_template = PromptTemplate(
         input_variables=["test_cases", "input_format", "description"],
         template="""
@@ -97,7 +112,7 @@ Validate now and return only valid cases:
     )
 
     response = llm.invoke(prompt)
-    raw_content = response.content.strip()
+    raw_content = response.content.strip() if isinstance(response.content, str) else ""
 
     cleaned_content = raw_content.replace("```json", "").replace("```", "").strip()
     try:
