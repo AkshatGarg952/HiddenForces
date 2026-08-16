@@ -1,10 +1,17 @@
 import logging
 import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from .routes import router
+
+# Loaded before .routes is imported and before the GOOGLE_API_KEY check below:
+# relying on a generator module's own load_dotenv() to run first makes startup
+# depend on import order.
+load_dotenv()
+
+from .routes import router  # noqa: E402  (import must follow load_dotenv)
 
 logger = logging.getLogger(__name__)
 

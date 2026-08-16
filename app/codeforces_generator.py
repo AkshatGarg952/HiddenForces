@@ -14,7 +14,8 @@ load_dotenv()
 # Initialize connection to Gemini model
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash-lite",
-    google_api_key=os.getenv("GOOGLE_API_KEY")
+    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    timeout=30
 )
 
 def generate_codeforces_test_cases(metadata: dict, num_cases: int = 10, solution: dict = None) -> list:
@@ -162,8 +163,9 @@ Now generate {num_cases} merciless test case inputs:
         parsed = json.loads(cleaned_content)
         if isinstance(parsed, list):
             return [str(item) for item in parsed if str(item).strip()][:num_cases]
-    except json.JSONDecodeError:
-        pass
+        raise ValueError("Expected a JSON array from Gemini response")
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(f"generate_codeforces_test_cases: falling back to line-based parsing ({exc})")
 
     test_cases = []
     current_case = []
